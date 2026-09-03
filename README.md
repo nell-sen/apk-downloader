@@ -168,6 +168,31 @@ Gradle modern otomatis mengunduh binary AAPT2 yang kompatibel dengan arsitektur 
 
 ---
 
+## 🤖 Otomatisasi Build dengan GitHub Actions (CI/CD)
+
+Proyek ini telah dilengkapi dengan workflow GitHub Actions di `.github/workflows/build-apk.yml` untuk melakukan build file APK secara otomatis di cloud GitHub.
+
+### Cara Menggunakan:
+
+1. **Build Otomatis saat Push / PR**:
+   - Setiap kali Anda melakukan `git push` ke branch `main` atau `master`, GitHub Actions akan otomatis meng-compile Debug APK.
+   - Hasil file APK dapat diunduh dari tab **Actions** -> pilih workflow run -> bagian **Artifacts** (**NellDownloader-APKs**).
+
+2. **Manual Trigger (Workflow Dispatch)**:
+   - Buka tab **Actions** di repositori GitHub Anda.
+   - Pilih workflow **Build Android APK**.
+   - Klik **Run workflow**, lalu pilih tipe build: `debug`, `release`, atau `both`.
+
+3. **Auto Release saat Buat Git Tag**:
+   - Ketika Anda membuat dan melakukan push tag versi (misal `v1.0.0`):
+     ```bash
+     git tag v1.0.0
+     git push origin v1.0.0
+     ```
+   - GitHub Actions akan otomatis mem-build APK dan mempublikasikannya langsung ke menu **Releases** di GitHub.
+
+---
+
 ## 💡 Fitur Utama Nell Downloader
 
 - 🧊 **Luminous Glassmorphism UI**: Tampilan transparan frosted glass dengan tema dinamis dark/light mode.
