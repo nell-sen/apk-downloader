@@ -26,6 +26,9 @@ interface DownloadDao {
     @Query("SELECT * FROM downloads WHERE status = :status ORDER BY createdAt DESC")
     fun getDownloadsByStatus(status: DownloadStatus): Flow<List<DownloadEntity>>
 
+    @Query("SELECT * FROM downloads WHERE status = :status ORDER BY createdAt ASC")
+    suspend fun getDownloadsByStatusSync(status: DownloadStatus): List<DownloadEntity>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertDownload(download: DownloadEntity)
 

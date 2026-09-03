@@ -4,46 +4,46 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 
-// Dark Mode Glass Palette
-val DarkBackground = Color(0xFF070B14)
-val DarkSurface = Color(0xFF10192A)
-val DarkGlassCard = Color(0x99121E33)
-val DarkGlassCardBorder = Color(0x3360A5FA)
-val DarkGlassHighlight = Color(0x4038BDF8)
-val DarkTextPrimary = Color(0xFFF1F5F9)
+// Dark Mode Native Palette
+val DarkBackground = Color(0xFF0F1115) // Deep dark gray/blue
+val DarkSurface = Color(0xFF1A1D24)
+val DarkGlassCard = Color(0xFF22262F) // Solid card color
+val DarkGlassCardBorder = Color(0x1AFFFFFF) // Very subtle border if needed
+val DarkGlassHighlight = Color(0x00000000)
+val DarkTextPrimary = Color(0xFFF8FAFC)
 val DarkTextSecondary = Color(0xFF94A3B8)
 
-// Light Mode Glass Palette
-val LightBackground = Color(0xFFF1F5F9)
+// Light Mode Native Palette
+val LightBackground = Color(0xFFF8FAFC)
 val LightSurface = Color(0xFFFFFFFF)
-val LightGlassCard = Color(0xB3FFFFFF)
-val LightGlassCardBorder = Color(0x4D94A3B8)
-val LightGlassHighlight = Color(0x330284C7)
+val LightGlassCard = Color(0xFFFFFFFF)
+val LightGlassCardBorder = Color(0xFFE2E8F0)
+val LightGlassHighlight = Color(0x00000000)
 val LightTextPrimary = Color(0xFF0F172A)
-val LightTextSecondary = Color(0xFF475569)
+val LightTextSecondary = Color(0xFF64748B)
 
 // Brand & Accent Colors
-val AccentCyan = Color(0xFF00E5FF)
-val AccentBlue = Color(0xFF3B82F6)
-val AccentIndigo = Color(0xFF6366F1)
-val AccentPurple = Color(0xFF8B5CF6)
-val AccentGreen = Color(0xFF10B981)
-val AccentRed = Color(0xFFEF4444)
-val AccentAmber = Color(0xFFF59E0B)
+val AccentCyan = Color(0xFF007AFF) // Use a native blue instead of neon cyan
+val AccentBlue = Color(0xFF007AFF)
+val AccentIndigo = Color(0xFF5856D6)
+val AccentPurple = Color(0xFFAF52DE)
+val AccentGreen = Color(0xFF34C759)
+val AccentRed = Color(0xFFFF3B30)
+val AccentAmber = Color(0xFFFF9500)
 
 val PrimaryGlassGradient = Brush.linearGradient(
-    colors = listOf(AccentCyan, AccentBlue, AccentIndigo)
+    colors = listOf(AccentBlue, AccentIndigo)
 )
 
 val GlowGradient = Brush.radialGradient(
-    colors = listOf(Color(0x3300E5FF), Color(0x00000000))
+    colors = listOf(Color.Transparent, Color.Transparent)
 )
 
 object GlassTokens {
-    val CornerRadiusSm = 12.dp
-    val CornerRadiusMd = 20.dp
-    val CornerRadiusLg = 28.dp
+    val CornerRadiusSm = 8.dp
+    val CornerRadiusMd = 16.dp
+    val CornerRadiusLg = 24.dp
     val BorderWidth = 1.dp
-    val ShadowElevation = 8.dp
+    val ShadowElevation = 0.dp // Remove heavy shadows
     val MinTouchTarget = 48.dp
 }

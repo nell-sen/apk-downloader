@@ -35,17 +35,23 @@ class HlsDownloader {
         headers: Map<String, String> = emptyMap(),
         concurrency: Int = 4,
         onProgress: (progress: Float, completedSegments: Int, totalSegments: Int, downloadedBytes: Long, speed: Long, etaSeconds: Long) -> Unit
-    ): Boolean = withContext(Dispatchers.IO) {
+    ): DownloadResult = withContext(Dispatchers.IO) {
         // 1. Fetch Playlist
         val req = Request.Builder().url(variantOrMediaPlaylistUrl)
         headers.forEach { (k, v) -> req.header(k, v) }
         val resp = try {
             NetworkModule.okHttpClient.newCall(req.build()).execute()
         } catch (e: Exception) {
-            return@withContext false
+            return@withContext DownloadResult.Error("Network error: ${e.localizedMessage}")
+        }
+        
+        val contentType = resp.header("Content-Type")?.lowercase() ?: ""
+        if (contentType.contains("text/html")) {
+            resp.close()
+            return@withContext DownloadResult.Error("Access Denied or HTML response disguised as media.")
         }
 
-        val manifestContent = resp.body?.string() ?: return@withContext false
+        val manifestContent = resp.body?.string() ?: return@withContext DownloadResult.Error("Empty playlist response")
         val finalUrl = resp.request.url.toString()
 
         var mediaPlaylistUrl = finalUrl
@@ -54,8 +60,13 @@ class HlsDownloader {
         // If master playlist, pick best variant
         if (HlsParser.isMasterPlaylist(manifestContent)) {
             val master = HlsParser.parseMasterPlaylist(manifestContent, finalUrl)
-            if (master.variants.isEmpty()) return@withContext false
-            val chosenVariant = master.variants.first()
+            if (master.variants.isEmpty()) return@withContext DownloadResult.Error("No variants found in master playlist")
+            
+            // Priority: height DESC, bandwidth DESC
+            val chosenVariant = master.variants.sortedWith(
+                compareByDescending<com.example.core.parser.HlsVariantStream> { it.height }
+                    .thenByDescending { it.bandwidth }
+            ).first()
             mediaPlaylistUrl = chosenVariant.url
 
             val vReq = Request.Builder().url(mediaPlaylistUrl)
@@ -63,14 +74,14 @@ class HlsDownloader {
             val vResp = try {
                 NetworkModule.okHttpClient.newCall(vReq.build()).execute()
             } catch (e: Exception) {
-                return@withContext false
+                return@withContext DownloadResult.Error("Failed to fetch variant playlist")
             }
-            manifestToUse = vResp.body?.string() ?: return@withContext false
+            manifestToUse = vResp.body?.string() ?: return@withContext DownloadResult.Error("Empty variant playlist response")
         }
 
         val mediaPlaylist = HlsParser.parseMediaPlaylist(manifestToUse, mediaPlaylistUrl)
         val segments = mediaPlaylist.segments
-        if (segments.isEmpty()) return@withContext false
+        if (segments.isEmpty()) return@withContext DownloadResult.Error("No segments found in media playlist")
 
         val segmentsDir = File(tempDir, "segments").apply { mkdirs() }
         val totalSegments = segments.size
@@ -135,7 +146,7 @@ class HlsDownloader {
             results.all { it }
         }
 
-        if (!downloadSuccess) return@withContext false
+        if (!currentCoroutineContext().isActive || !downloadSuccess) return@withContext DownloadResult.Error("Failed to download all segments")
 
         // Merge all segments in order into single file
         val merged = mergeSegments(segmentsDir, segments, targetFile)
@@ -143,9 +154,9 @@ class HlsDownloader {
             onProgress(1.0f, totalSegments, totalSegments, targetFile.length(), 0L, 0L)
             // Cleanup segment files
             segmentsDir.deleteRecursively()
-            return@withContext true
+            return@withContext DownloadResult.Success
         }
-        false
+        DownloadResult.Error("Failed to merge downloaded segments")
     }
 
     private suspend fun downloadSegmentWithRetry(
@@ -264,3 +275,4 @@ class HlsDownloader {
         }
     }
 }
+

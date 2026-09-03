@@ -174,58 +174,12 @@ class DownloadManager private constructor(private val context: Context) {
         if (activeJobs.size >= maxConcurrentDownloads) return
 
         scope.launch {
-            val entityList = downloadDao.getDownloadById("") // dummy query trigger
-            // Get queued items
-            val all = downloadDao.getAllDownloads()
-            // We find the first QUEUED download
-            val queued = database.openHelper.readableDatabase.let {
-                // query directly
-            }
-        }
-        scope.launch {
-            val allDownloads = database.openHelper.readableDatabase
-            // Let's use downloadDao
-            val queuedItem = downloadDao.getDownloadById("non-existent") // fallback
-        }
-        startNextQueuedTask()
-    }
-
-    private fun startNextQueuedTask() {
-        scope.launch {
-            val downloads = database.runInTransaction<List<DownloadEntity>> {
-                // get queued downloads
-                emptyList()
-            }
-            // Execute queued query
-            val list = downloadDao.getAllDownloads()
-        }
-        scope.launch {
-            val entities = downloadDao.getDownloadsByStatus(DownloadStatus.QUEUED)
-            // collect first item
-            // or query
-            executeQueuedDownloads()
-        }
-    }
-
-    private suspend fun executeQueuedDownloads() {
-        if (activeJobs.size >= maxConcurrentDownloads) return
-
-        val queuedEntities = database.openHelper.let {
-            // Find queued entity
-            val cursor = database.query("SELECT * FROM downloads WHERE status = 'QUEUED' ORDER BY createdAt ASC LIMIT 1", null)
-            val idList = mutableListOf<String>()
-            while (cursor.moveToNext()) {
-                val idIdx = cursor.getColumnIndex("id")
-                if (idIdx >= 0) idList.add(cursor.getString(idIdx))
-            }
-            cursor.close()
-            idList
-        }
-
-        for (id in queuedEntities) {
-            if (activeJobs.size >= maxConcurrentDownloads) break
-            if (!activeJobs.containsKey(id)) {
-                startExecution(id)
+            val queuedEntities = downloadDao.getDownloadsByStatusSync(DownloadStatus.QUEUED)
+            for (entity in queuedEntities) {
+                if (activeJobs.size >= maxConcurrentDownloads) break
+                if (!activeJobs.containsKey(entity.id)) {
+                    startExecution(entity.id)
+                }
             }
         }
     }
@@ -249,7 +203,7 @@ class DownloadManager private constructor(private val context: Context) {
             DownloadService.start(context)
             updateNotificationState()
 
-            val success: Boolean = if (entity.isHls) {
+            val result: DownloadResult = if (entity.isHls) {
                 val urlToDownload = entity.variantUrl ?: entity.url
                 hlsDownloader.downloadHls(
                     variantOrMediaPlaylistUrl = urlToDownload,
@@ -294,25 +248,36 @@ class DownloadManager private constructor(private val context: Context) {
 
             activeJobs.remove(downloadId)
 
-            if (success && targetFile.exists() && targetFile.length() > 0) {
-                // Save to MediaStore
-                val mediaStoreUri = storageManager.saveToMediaStore(
-                    file = targetFile,
-                    title = entity.title,
-                    mimeType = entity.mimeType,
-                    isAudio = isAudio
-                )
-                downloadDao.markCompleted(
-                    id = downloadId,
-                    filePath = mediaStoreUri
-                )
-                storageManager.cleanupTempDirForTask(downloadId)
-                showCompletedNotification(entity.title)
-            } else {
-                val freshEntity = downloadDao.getDownloadById(downloadId)
-                if (freshEntity?.status != DownloadStatus.PAUSED && freshEntity?.status != DownloadStatus.CANCELLED) {
-                    downloadDao.markFailed(downloadId, error = "Download failed or connection interrupted.")
-                    showErrorNotification(entity.title, "Download failed.")
+            when (result) {
+                is DownloadResult.Success -> {
+                    if (targetFile.exists() && targetFile.length() > 0) {
+                        // Save to MediaStore
+                        val mediaStoreUri = storageManager.saveToMediaStore(
+                            file = targetFile,
+                            title = entity.title,
+                            mimeType = entity.mimeType,
+                            isAudio = isAudio
+                        )
+                        downloadDao.markCompleted(
+                            id = downloadId,
+                            filePath = mediaStoreUri
+                        )
+                        storageManager.cleanupTempDirForTask(downloadId)
+                        showCompletedNotification(entity.title)
+                    } else {
+                        downloadDao.markFailed(downloadId, error = "Downloaded file is empty or missing.")
+                        showErrorNotification(entity.title, "Downloaded file is empty.")
+                    }
+                }
+                is DownloadResult.Cancelled -> {
+                    // Do nothing, pause or cancel already updated DB
+                }
+                is DownloadResult.Error -> {
+                    val freshEntity = downloadDao.getDownloadById(downloadId)
+                    if (freshEntity?.status != DownloadStatus.PAUSED && freshEntity?.status != DownloadStatus.CANCELLED) {
+                        downloadDao.markFailed(downloadId, error = result.message)
+                        showErrorNotification(entity.title, result.message)
+                    }
                 }
             }
 

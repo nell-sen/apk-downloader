@@ -65,6 +65,10 @@ import com.example.features.home.HomeViewModel
 import com.example.features.player.PlayerScreen
 import com.example.features.settings.SettingsScreen
 import com.example.ui.theme.AccentCyan
+import com.example.ui.theme.AccentBlue
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
 import com.example.ui.theme.GlassTokens
 import com.example.ui.theme.LocalGlassColors
 import java.net.URLDecoder
@@ -221,95 +225,59 @@ fun GlassFloatingNavBar(
     onNavigate: (Screen) -> Unit
 ) {
     val glassColors = LocalGlassColors.current
-
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .navigationBarsPadding()
-            .padding(horizontal = 16.dp, vertical = 10.dp),
-        contentAlignment = Alignment.Center
+    NavigationBar(
+        containerColor = glassColors.surface,
+        contentColor = glassColors.textSecondary,
+        tonalElevation = 0.dp
     ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .shadow(
-                    elevation = 12.dp,
-                    shape = RoundedCornerShape(GlassTokens.CornerRadiusLg),
-                    ambientColor = Color.Black.copy(alpha = 0.3f),
-                    spotColor = Color.Black.copy(alpha = 0.4f)
-                )
-                .clip(RoundedCornerShape(GlassTokens.CornerRadiusLg))
-                .background(glassColors.surface.copy(alpha = if (glassColors.isDark) 0.85f else 0.92f))
-                .border(
-                    width = 1.dp,
-                    brush = Brush.verticalGradient(
-                        listOf(
-                            glassColors.glassCardBorder.copy(alpha = 0.6f),
-                            glassColors.glassCardBorder.copy(alpha = 0.2f)
-                        )
-                    ),
-                    shape = RoundedCornerShape(GlassTokens.CornerRadiusLg)
-                )
-                .padding(vertical = 8.dp, horizontal = 6.dp)
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceAround,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                screens.forEach { screen ->
-                    val isSelected = currentRoute == screen.route
-
-                    Column(
-                        modifier = Modifier
-                            .testTag("nav_item_${screen.route}")
-                            .clip(RoundedCornerShape(12.dp))
-                            .clickable { onNavigate(screen) }
-                            .padding(horizontal = 10.dp, vertical = 6.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        if (screen == Screen.Downloads && activeCount > 0) {
-                            BadgedBox(
-                                badge = {
-                                    Badge(
-                                        containerColor = AccentCyan,
-                                        contentColor = Color.Black
-                                    ) {
-                                        Text(
-                                            text = "$activeCount",
-                                            fontWeight = FontWeight.Bold,
-                                            fontSize = 10.sp
-                                        )
-                                    }
+        screens.forEach { screen ->
+            val isSelected = currentRoute == screen.route
+            NavigationBarItem(
+                selected = isSelected,
+                onClick = { onNavigate(screen) },
+                icon = {
+                    if (screen == Screen.Downloads && activeCount > 0) {
+                        BadgedBox(
+                            badge = {
+                                Badge(
+                                    containerColor = AccentBlue,
+                                    contentColor = Color.White
+                                ) {
+                                    Text(
+                                        text = "$activeCount",
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 10.sp
+                                    )
                                 }
-                            ) {
-                                Icon(
-                                    imageVector = screen.icon,
-                                    contentDescription = screen.title,
-                                    tint = if (isSelected) AccentCyan else glassColors.textSecondary,
-                                    modifier = Modifier.size(22.dp)
-                                )
                             }
-                        } else {
+                        ) {
                             Icon(
                                 imageVector = screen.icon,
-                                contentDescription = screen.title,
-                                tint = if (isSelected) AccentCyan else glassColors.textSecondary,
-                                modifier = Modifier.size(22.dp)
+                                contentDescription = screen.title
                             )
                         }
-
-                        Spacer(modifier = Modifier.height(3.dp))
-
-                        Text(
-                            text = screen.title,
-                            color = if (isSelected) AccentCyan else glassColors.textSecondary,
-                            fontSize = 11.sp,
-                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
+                    } else {
+                        Icon(
+                            imageVector = screen.icon,
+                            contentDescription = screen.title
                         )
                     }
-                }
-            }
+                },
+                label = {
+                    Text(
+                        text = screen.title,
+                        fontSize = 11.sp,
+                        fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal
+                    )
+                },
+                colors = NavigationBarItemDefaults.colors(
+                    selectedIconColor = AccentBlue,
+                    unselectedIconColor = glassColors.textSecondary,
+                    selectedTextColor = AccentBlue,
+                    unselectedTextColor = glassColors.textSecondary,
+                    indicatorColor = AccentBlue.copy(alpha = 0.15f)
+                )
+            )
         }
     }
 }

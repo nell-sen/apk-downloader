@@ -120,7 +120,7 @@ fun HistoryScreen(
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(horizontal = 20.dp),
+                        .padding(horizontal = 16.dp),
                     verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
                     items(historyList, key = { it.id }) { item ->
@@ -136,7 +136,7 @@ fun HistoryScreen(
                                     imageVector = Icons.Default.Link,
                                     contentDescription = null,
                                     tint = AccentCyan,
-                                    modifier = Modifier.size(20.dp)
+                                    modifier = Modifier.size(16.dp)
                                 )
                                 Spacer(modifier = Modifier.width(12.dp))
                                 Column(modifier = Modifier.weight(1f)) {

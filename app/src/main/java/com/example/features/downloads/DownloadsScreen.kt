@@ -88,7 +88,7 @@ fun DownloadsScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(bottom = 100.dp)
+                
         ) {
             GlassTopBar(
                 title = "Downloads",
@@ -99,7 +99,7 @@ fun DownloadsScreen(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 20.dp, vertical = 4.dp),
+                    .padding(horizontal = 16.dp, vertical = 4.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 GlassChip(
@@ -136,7 +136,7 @@ fun DownloadsScreen(
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(horizontal = 20.dp),
+                        .padding(horizontal = 16.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     items(downloads, key = { it.id }) { item ->
@@ -201,21 +201,19 @@ fun DownloadItemCard(
                         contentScale = ContentScale.Crop,
                         modifier = Modifier
                             .size(60.dp)
-                            .clip(RoundedCornerShape(GlassTokens.CornerRadiusSm))
-                            .border(1.dp, glassColors.glassCardBorder, RoundedCornerShape(GlassTokens.CornerRadiusSm))
+                            .clip(RoundedCornerShape(8.dp))
                     )
                 } else {
                     Box(
                         modifier = Modifier
                             .size(60.dp)
-                            .background(glassColors.glassCard, RoundedCornerShape(GlassTokens.CornerRadiusSm))
-                            .border(1.dp, glassColors.glassCardBorder, RoundedCornerShape(GlassTokens.CornerRadiusSm)),
+                            .background(glassColors.surface, RoundedCornerShape(8.dp)),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
                             imageVector = if (isAudio) Icons.Default.Audiotrack else Icons.Default.Videocam,
                             contentDescription = null,
-                            tint = glassColors.accentCyan,
+                            tint = glassColors.textSecondary,
                             modifier = Modifier.size(24.dp)
                         )
                     }

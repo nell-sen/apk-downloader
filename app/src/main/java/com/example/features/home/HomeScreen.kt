@@ -112,7 +112,7 @@ fun HomeScreen(
                 .fillMaxSize()
                 .animateContentSize(animationSpec = spring())
                 .verticalScroll(rememberScrollState())
-                .padding(bottom = 120.dp)
+                .padding(bottom = 116.dp)
         ) {
             // App Top Bar
             GlassTopBar(
@@ -132,7 +132,7 @@ fun HomeScreen(
                     GlassCard(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 20.dp, vertical = 6.dp),
+                            .padding(horizontal = 16.dp, vertical = 6.dp),
                         borderColor = AccentCyan.copy(alpha = 0.5f),
                         backgroundColor = glassColors.glassCard
                     ) {
@@ -150,7 +150,7 @@ fun HomeScreen(
                                     imageVector = Icons.Default.Link,
                                     contentDescription = null,
                                     tint = AccentCyan,
-                                    modifier = Modifier.size(20.dp)
+                                    modifier = Modifier.size(16.dp)
                                 )
                             }
                             Spacer(modifier = Modifier.width(12.dp))
@@ -196,7 +196,7 @@ fun HomeScreen(
             GlassCard(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 20.dp, vertical = 8.dp)
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
             ) {
                 Column {
                     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -263,7 +263,7 @@ fun HomeScreen(
                     GlassCard(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 20.dp, vertical = 6.dp),
+                            .padding(horizontal = 16.dp, vertical = 6.dp),
                         borderColor = AccentCyan.copy(alpha = 0.5f)
                     ) {
                         Column {
@@ -307,7 +307,7 @@ fun HomeScreen(
                     GlassCard(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 20.dp, vertical = 6.dp),
+                            .padding(horizontal = 16.dp, vertical = 6.dp),
                         borderColor = AccentAmber,
                         backgroundColor = glassColors.glassCard
                     ) {
@@ -350,7 +350,7 @@ fun HomeScreen(
                     GlassCard(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 20.dp, vertical = 6.dp),
+                            .padding(horizontal = 16.dp, vertical = 6.dp),
                         borderColor = AccentRed.copy(alpha = 0.8f)
                     ) {
                         Row(verticalAlignment = Alignment.Top) {
@@ -401,7 +401,7 @@ fun HomeScreen(
             ) {
                 Column {
                     // Supported Platform Badges
-                    Column(modifier = Modifier.padding(horizontal = 20.dp)) {
+                    Column(modifier = Modifier.padding(horizontal = 16.dp)) {
                         Text(
                             text = "Supported Formats & Protocols",
                             color = glassColors.textSecondary,
@@ -425,13 +425,13 @@ fun HomeScreen(
                         }
                     }
 
-                    Spacer(modifier = Modifier.height(20.dp))
+                    Spacer(modifier = Modifier.height(16.dp))
 
                     // Engine Highlights Card
                     GlassCard(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 20.dp)
+                            .padding(horizontal = 16.dp)
                     ) {
                         Column {
                             Row(verticalAlignment = Alignment.CenterVertically) {

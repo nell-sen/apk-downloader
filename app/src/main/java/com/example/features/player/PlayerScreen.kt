@@ -281,7 +281,7 @@ fun PlayerScreen(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 20.dp, vertical = 24.dp)
+                        .padding(horizontal = 16.dp, vertical = 24.dp)
                         .align(Alignment.BottomCenter)
                 ) {
                     val sliderVal = if (durationMs > 0) (currentPosMs.toFloat() / durationMs).coerceIn(0f, 1f) else 0f

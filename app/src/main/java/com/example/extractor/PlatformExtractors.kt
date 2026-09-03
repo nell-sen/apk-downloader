@@ -1,7 +1,6 @@
 package com.example.extractor
 
 import com.example.core.network.NetworkModule
-import com.example.domain.model.MediaFormat
 import com.example.domain.model.MediaInfo
 import com.example.domain.model.MediaType
 import java.util.UUID
@@ -18,7 +17,6 @@ class YouTubePlatformExtractor : PlatformExtractor {
 
     override suspend fun analyze(url: String, headers: Map<String, String>): MediaInfo? = withContext(Dispatchers.IO) {
         try {
-            // Use public oEmbed API for legal title & thumbnail extraction
             val oembedUrl = "https://www.youtube.com/oembed?url=$url&format=json"
             val req = Request.Builder().url(oembedUrl).build()
             val resp = NetworkModule.okHttpClient.newCall(req).execute()
@@ -34,33 +32,18 @@ class YouTubePlatformExtractor : PlatformExtractor {
                 author = json.optString("author_name", null)
             }
 
-            // Fallback to GenericWebExtractor if direct downloadable media link is present
             val generic = GenericWebExtractor()
             val webMedia = generic.analyze(url, headers)
 
-            val formats = webMedia?.formats?.ifEmpty { null } ?: listOf(
-                MediaFormat(
-                    id = "yt_direct_standard",
-                    qualityLabel = "Standard Stream",
-                    url = url,
-                    extension = "mp4",
-                    mimeType = "video/mp4",
-                    hasVideo = true,
-                    hasAudio = true
-                )
-            )
+            if (webMedia == null || webMedia.formats.isEmpty()) {
+                return@withContext null
+            }
 
-            MediaInfo(
-                id = UUID.randomUUID().toString(),
+            webMedia.copy(
                 title = title,
-                thumbnail = thumbnail ?: webMedia?.thumbnail,
+                thumbnail = thumbnail ?: webMedia.thumbnail,
                 platform = "YouTube",
-                sourceUrl = url,
-                mediaType = MediaType.VIDEO,
-                formats = formats,
-                author = author,
-                headers = headers,
-                isHls = webMedia?.isHls ?: false
+                author = author
             )
         } catch (e: Exception) {
             null
@@ -94,28 +77,15 @@ class TikTokPlatformExtractor : PlatformExtractor {
             val generic = GenericWebExtractor()
             val webMedia = generic.analyze(url, headers)
 
-            val formats = webMedia?.formats ?: listOf(
-                MediaFormat(
-                    id = "tiktok_fmt_0",
-                    qualityLabel = "HD Video",
-                    url = url,
-                    extension = "mp4",
-                    mimeType = "video/mp4",
-                    hasVideo = true,
-                    hasAudio = true
-                )
-            )
+            if (webMedia == null || webMedia.formats.isEmpty()) {
+                return@withContext null
+            }
 
-            MediaInfo(
-                id = UUID.randomUUID().toString(),
+            webMedia.copy(
                 title = title,
-                thumbnail = thumbnail ?: webMedia?.thumbnail,
+                thumbnail = thumbnail ?: webMedia.thumbnail,
                 platform = "TikTok",
-                sourceUrl = url,
-                mediaType = MediaType.VIDEO,
-                formats = formats,
-                author = author,
-                headers = headers
+                author = author
             )
         } catch (e: Exception) {
             null
@@ -149,28 +119,15 @@ class VimeoPlatformExtractor : PlatformExtractor {
             val generic = GenericWebExtractor()
             val webMedia = generic.analyze(url, headers)
 
-            val formats = webMedia?.formats ?: listOf(
-                MediaFormat(
-                    id = "vimeo_fmt_0",
-                    qualityLabel = "Standard Quality",
-                    url = url,
-                    extension = "mp4",
-                    mimeType = "video/mp4",
-                    hasVideo = true,
-                    hasAudio = true
-                )
-            )
+            if (webMedia == null || webMedia.formats.isEmpty()) {
+                return@withContext null
+            }
 
-            MediaInfo(
-                id = UUID.randomUUID().toString(),
+            webMedia.copy(
                 title = title,
-                thumbnail = thumbnail ?: webMedia?.thumbnail,
+                thumbnail = thumbnail ?: webMedia.thumbnail,
                 platform = "Vimeo",
-                sourceUrl = url,
-                durationSeconds = duration,
-                mediaType = MediaType.VIDEO,
-                formats = formats,
-                headers = headers
+                durationSeconds = duration
             )
         } catch (e: Exception) {
             null
@@ -204,28 +161,15 @@ class SoundCloudPlatformExtractor : PlatformExtractor {
             val generic = GenericWebExtractor()
             val webMedia = generic.analyze(url, headers)
 
-            val formats = webMedia?.formats ?: listOf(
-                MediaFormat(
-                    id = "sc_audio_0",
-                    qualityLabel = "HQ Audio",
-                    url = url,
-                    extension = "mp3",
-                    mimeType = "audio/mpeg",
-                    hasVideo = false,
-                    hasAudio = true
-                )
-            )
+            if (webMedia == null || webMedia.formats.isEmpty()) {
+                return@withContext null
+            }
 
-            MediaInfo(
-                id = UUID.randomUUID().toString(),
+            webMedia.copy(
                 title = title,
-                thumbnail = thumbnail ?: webMedia?.thumbnail,
+                thumbnail = thumbnail ?: webMedia.thumbnail,
                 platform = "SoundCloud",
-                sourceUrl = url,
-                mediaType = MediaType.AUDIO,
-                formats = formats,
-                author = author,
-                headers = headers
+                author = author
             )
         } catch (e: Exception) {
             null
@@ -242,24 +186,11 @@ class TwitchPlatformExtractor : PlatformExtractor {
     override suspend fun analyze(url: String, headers: Map<String, String>): MediaInfo? = withContext(Dispatchers.IO) {
         val generic = GenericWebExtractor()
         val webMedia = generic.analyze(url, headers)
-        webMedia?.copy(platform = "Twitch") ?: MediaInfo(
-            id = UUID.randomUUID().toString(),
-            title = "Twitch Stream",
-            sourceUrl = url,
-            platform = "Twitch",
-            mediaType = MediaType.STREAM,
-            formats = listOf(
-                MediaFormat(
-                    id = "twitch_stream",
-                    qualityLabel = "Live Stream",
-                    url = url,
-                    extension = "m3u8",
-                    mimeType = "application/x-mpegURL",
-                    isHlsVariant = true
-                )
-            ),
-            isHls = true,
-            isLive = true
-        )
+        
+        if (webMedia == null || webMedia.formats.isEmpty()) {
+            return@withContext null
+        }
+        
+        webMedia.copy(platform = "Twitch", isLive = true)
     }
 }
