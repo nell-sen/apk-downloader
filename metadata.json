@@ -1,0 +1,6 @@
+{
+  "name": "Nell Downloader",
+  "description": "Universal native media and HLS stream downloader with glassmorphism UI, direct and segment downloads, resume support, and media player preview.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

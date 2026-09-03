@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">Nell Downloader</string>
+    <string name="universal_downloader">Universal Media Downloader</string>
+    <string name="paste_url_hint">Paste media URL (e.g. MP4, M3U8, Web)</string>
+    <string name="analyze">Analyze</string>
+    <string name="analyzing_media">Analyzing media...</string>
+    <string name="resolving_stream">Resolving stream and metadata…</string>
+    <string name="download">Download</string>
+    <string name="nav_home">Home</string>
+    <string name="nav_downloads">Downloads</string>
+    <string name="nav_browser">Browser</string>
+    <string name="nav_settings">Settings</string>
+</resources>
