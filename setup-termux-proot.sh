@@ -74,7 +74,13 @@ else
     echo -e "${YELLOW}[!] sdkmanager not found in PATH directly. Licenses will be auto-accepted by Gradle during build.${NC}"
 fi
 
-# 5. Persist environment variables in ~/.bashrc
+# 5. Persist environment variables in ~/.bashrc & ensure Gradle Wrapper
+mkdir -p gradle/wrapper
+if [ ! -f "gradle/wrapper/gradle-wrapper.jar" ]; then
+    echo -e "Downloading gradle-wrapper.jar..."
+    curl -sLo gradle/wrapper/gradle-wrapper.jar https://repo.maven.apache.org/maven2/org/gradle/gradle-wrapper/8.13/gradle-wrapper-8.13.jar || \
+    wget -q -O gradle/wrapper/gradle-wrapper.jar https://repo.maven.apache.org/maven2/org/gradle/gradle-wrapper/8.13/gradle-wrapper-8.13.jar || true
+fi
 echo -e "${GREEN}[5/5] Updating ~/.bashrc for future sessions...${NC}"
 BASHRC="$HOME/.bashrc"
 if ! grep -q "ANDROID_HOME" "$BASHRC" 2>/dev/null; then

@@ -47,7 +47,13 @@ echo -e "  • Android Home: $ANDROID_HOME"
 echo -e "  • Target Build: $BUILD_TYPE"
 echo ""
 
-# 2. Ensure Gradlew is executable
+# 2. Ensure Gradlew and Gradle Wrapper JAR are present
+mkdir -p gradle/wrapper
+if [ ! -f "gradle/wrapper/gradle-wrapper.jar" ]; then
+    echo -e "${YELLOW}[*] Downloading missing gradle-wrapper.jar...${NC}"
+    curl -sLo gradle/wrapper/gradle-wrapper.jar https://repo.maven.apache.org/maven2/org/gradle/gradle-wrapper/8.13/gradle-wrapper-8.13.jar || \
+    wget -q -O gradle/wrapper/gradle-wrapper.jar https://repo.maven.apache.org/maven2/org/gradle/gradle-wrapper/8.13/gradle-wrapper-8.13.jar || true
+fi
 chmod +x ./gradlew 2>/dev/null || true
 
 # 3. Create output directory
