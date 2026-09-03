@@ -2,6 +2,8 @@ package com.example.features.home
 
 import android.content.Context
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
@@ -35,7 +37,6 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.ContentPaste
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.ErrorOutline
-import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.Layers
 import androidx.compose.material.icons.filled.Link
@@ -43,21 +44,16 @@ import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.PlayCircle
 import androidx.compose.material.icons.filled.Speed
 import androidx.compose.material.icons.filled.Stream
-import androidx.compose.material.icons.filled.VideoLibrary
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -66,7 +62,6 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -74,7 +69,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.domain.model.MediaFormat
-import com.example.domain.model.MediaInfo
 import com.example.ui.components.GlassBackground
 import com.example.ui.components.GlassButton
 import com.example.ui.components.GlassCard
@@ -87,7 +81,6 @@ import com.example.ui.theme.AccentCyan
 import com.example.ui.theme.AccentGreen
 import com.example.ui.theme.AccentIndigo
 import com.example.ui.theme.AccentRed
-import com.example.ui.theme.GlassTokens
 import com.example.ui.theme.LocalGlassColors
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -117,8 +110,9 @@ fun HomeScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .animateContentSize(animationSpec = spring())
                 .verticalScroll(rememberScrollState())
-                .padding(bottom = 100.dp)
+                .padding(bottom = 120.dp)
         ) {
             // App Top Bar
             GlassTopBar(
@@ -126,37 +120,7 @@ fun HomeScreen(
                 subtitle = "Universal Media & HLS Engine"
             )
 
-            // Quick Shortcut Row
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 20.dp, vertical = 4.dp),
-                horizontalArrangement = Arrangement.spacedBy(10.dp)
-            ) {
-                QuickActionCard(
-                    title = "Browser",
-                    icon = Icons.Default.Language,
-                    color = AccentCyan,
-                    modifier = Modifier.weight(1f),
-                    onClick = onNavigateToBrowser
-                )
-                QuickActionCard(
-                    title = "Downloads",
-                    icon = Icons.Default.Download,
-                    color = AccentBlue,
-                    modifier = Modifier.weight(1f),
-                    onClick = onNavigateToDownloads
-                )
-                QuickActionCard(
-                    title = "History",
-                    icon = Icons.Default.History,
-                    color = AccentIndigo,
-                    modifier = Modifier.weight(1f),
-                    onClick = onNavigateToHistory
-                )
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
             // Clipboard Detection Banner
             AnimatedVisibility(
@@ -429,73 +393,82 @@ fun HomeScreen(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Supported Platform Badges
-            Column(modifier = Modifier.padding(horizontal = 20.dp)) {
-                Text(
-                    text = "Supported Formats & Protocols",
-                    color = glassColors.textSecondary,
-                    fontWeight = FontWeight.SemiBold,
-                    fontSize = 13.sp
-                )
-                Spacer(modifier = Modifier.height(10.dp))
-
-                FlowRow(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    PlatformBadge("HLS / M3U8", AccentCyan)
-                    PlatformBadge("Direct MP4 / MKV", AccentBlue)
-                    PlatformBadge("MP3 / M4A / FLAC", AccentIndigo)
-                    PlatformBadge("AES-128 Encrypted HLS", AccentGreen)
-                    PlatformBadge("Web Pages & Feeds", AccentCyan)
-                    PlatformBadge("Vimeo & Dailymotion", AccentBlue)
-                    PlatformBadge("SoundCloud", AccentAmber)
-                    PlatformBadge("YouTube & TikTok (Public)", AccentRed)
-                }
-            }
-
-            Spacer(modifier = Modifier.height(20.dp))
-
-            // Engine Highlights Card
-            GlassCard(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 20.dp)
+            // Only show informational sections if the user isn't interacting with input or analyzing
+            AnimatedVisibility(
+                visible = urlInput.isBlank() && clipboardUrl == null && uiState !is HomeUiState.Analyzing,
+                enter = fadeIn() + slideInVertically(),
+                exit = fadeOut() + slideOutVertically()
             ) {
                 Column {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            imageVector = Icons.Default.Speed,
-                            contentDescription = null,
-                            tint = AccentCyan,
-                            modifier = Modifier.size(18.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
+                    // Supported Platform Badges
+                    Column(modifier = Modifier.padding(horizontal = 20.dp)) {
                         Text(
-                            text = "Engine Highlights",
-                            color = glassColors.textPrimary,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 15.sp
+                            text = "Supported Formats & Protocols",
+                            color = glassColors.textSecondary,
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 13.sp
                         )
+                        Spacer(modifier = Modifier.height(10.dp))
+
+                        FlowRow(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            PlatformBadge("HLS / M3U8", AccentCyan)
+                            PlatformBadge("Direct MP4 / MKV", AccentBlue)
+                            PlatformBadge("MP3 / M4A / FLAC", AccentIndigo)
+                            PlatformBadge("AES-128 Encrypted HLS", AccentGreen)
+                            PlatformBadge("Web Pages & Feeds", AccentCyan)
+                            PlatformBadge("Vimeo & Dailymotion", AccentBlue)
+                            PlatformBadge("SoundCloud", AccentAmber)
+                            PlatformBadge("YouTube & TikTok (Public)", AccentRed)
+                        }
                     }
 
-                    Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(20.dp))
 
-                    FeatureRow(
-                        icon = Icons.Default.Stream,
-                        title = "Full HLS & Master Playlist Engine",
-                        desc = "Resolves relative URLs, nested playlists, query tokens, and multi-bitrate streams."
-                    )
-                    FeatureRow(
-                        icon = Icons.Default.Layers,
-                        title = "Multi-segment Concurrency & Resume",
-                        desc = "Fetches TS segments concurrently with automatic retry and seamless concatenation."
-                    )
-                    FeatureRow(
-                        icon = Icons.Default.PlayCircle,
-                        title = "Media3 ExoPlayer Preview",
-                        desc = "Inspect video streams, audio tracks, and subtitles before downloading."
-                    )
+                    // Engine Highlights Card
+                    GlassCard(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 20.dp)
+                    ) {
+                        Column {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(
+                                    imageVector = Icons.Default.Speed,
+                                    contentDescription = null,
+                                    tint = AccentCyan,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = "Engine Highlights",
+                                    color = glassColors.textPrimary,
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 15.sp
+                                )
+                            }
+
+                            Spacer(modifier = Modifier.height(12.dp))
+
+                            FeatureRow(
+                                icon = Icons.Default.Stream,
+                                title = "Full HLS & Master Playlist Engine",
+                                desc = "Resolves relative URLs, nested playlists, query tokens, and multi-bitrate streams."
+                            )
+                            FeatureRow(
+                                icon = Icons.Default.Layers,
+                                title = "Multi-segment Concurrency & Resume",
+                                desc = "Fetches TS segments concurrently with automatic retry and seamless concatenation."
+                            )
+                            FeatureRow(
+                                icon = Icons.Default.PlayCircle,
+                                title = "Media3 ExoPlayer Preview",
+                                desc = "Inspect video streams, audio tracks, and subtitles before downloading."
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -515,49 +488,6 @@ fun HomeScreen(
                 onPreviewMedia(format)
             }
         )
-    }
-}
-
-@Composable
-fun QuickActionCard(
-    title: String,
-    icon: ImageVector,
-    color: Color,
-    modifier: Modifier = Modifier,
-    onClick: () -> Unit
-) {
-    val glassColors = LocalGlassColors.current
-
-    GlassCard(
-        modifier = modifier.height(84.dp),
-        onClick = onClick
-    ) {
-        Column(
-            modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(34.dp)
-                    .background(color.copy(alpha = 0.2f), CircleShape),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = icon,
-                    contentDescription = null,
-                    tint = color,
-                    modifier = Modifier.size(18.dp)
-                )
-            }
-            Spacer(modifier = Modifier.height(6.dp))
-            Text(
-                text = title,
-                color = glassColors.textPrimary,
-                fontWeight = FontWeight.Medium,
-                fontSize = 12.sp
-            )
-        }
     }
 }
 
@@ -615,3 +545,4 @@ fun FeatureRow(icon: ImageVector, title: String, desc: String) {
         }
     }
 }
+
